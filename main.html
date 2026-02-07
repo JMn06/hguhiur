@@ -1,0 +1,159 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+        flex-wrap: wrap;
+    }
+
+    .menu {
+        text-align: center;
+        max-width: 400px;
+        padding: 20px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    button:hover {
+        background-color: #218838;
+    }
+
+    .margin {
+        margin-top: 20px;
+    }
+</style>
+
+<body>
+
+<div class="menu">
+    <h2>Clima de una ciudad</h2>
+
+    <input type="text" id="cityInput" placeholder="Nombre de la ciudad">
+    <button id="searchButton">Buscar clima</button>
+    <div id="weatherSection" class="margin"></div>
+
+    <hr>
+
+    <h2>Capital de un país</h2>
+    <input type="text" id="countryInput" placeholder="Nombre del país">
+    <button id="countryButton">Buscar capital</button>
+    <div id="capitalSection" class="margin"></div>
+
+    <hr>
+
+    <h2>Usuario aleatorio</h2>
+    <button id="userButton">Generar usuario</button>
+    <div id="userSection" class="margin"></div>
+</div>
+
+<script>
+    const cityInput = document.getElementById('cityInput');
+    const searchButton = document.getElementById('searchButton');
+    const weatherSection = document.getElementById('weatherSection');
+
+    const apiKey = '6246fad215e145a4587abe876420a305';
+    const apiUrl = 'https://api.openweathermap.org/data/2.5/weather';
+
+    function showWeather(data) {
+        weatherSection.innerHTML = `
+            <h3>Clima en ${data.name}</h3>
+            <p>Temperatura: ${Math.floor(data.main.temp)}°C</p>
+            <p>Humedad: ${data.main.humidity}%</p>
+        `;
+    }
+
+    searchButton.addEventListener('click', async () => {
+        const city = cityInput.value;
+        if (!city) {
+            alert('Debes rellenar el campo');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${apiUrl}?q=${city}&units=metric&appid=${apiKey}`);
+            if (!response.ok) throw new Error();
+
+            const data = await response.json();
+            showWeather(data);
+        } catch {
+            weatherSection.innerHTML = 'No se encontró información del clima';
+        }
+    });
+
+    const countryInput = document.getElementById('countryInput');
+    const countryButton = document.getElementById('countryButton');
+    const capitalSection = document.getElementById('capitalSection');
+
+    const apiCountry = 'https://restcountries.com/v3.1/name/';
+
+    countryButton.addEventListener('click', async () => {
+        const country = countryInput.value;
+        if (!country) {
+            alert('Debes rellenar el campo');
+            return;
+        }
+
+        try {
+            const response = await fetch(apiCountry + country);
+            if (!response.ok) throw new Error();
+
+            const data = await response.json();
+            const capital = data[0].capital[0];
+            const countryName = data[0].name.common;
+
+            capitalSection.innerHTML = `
+                <h3>${countryName}</h3>
+                <p>Capital: ${capital}</p>
+            `;
+        } catch {
+            capitalSection.innerHTML = 'No se encontró información del país';
+        }
+    });
+
+    const userButton = document.getElementById('userButton');
+    const userSection = document.getElementById('userSection');
+
+    userButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('https://randomuser.me/api/');
+            if (!response.ok) throw new Error();
+
+            const data = await response.json();
+            const user = data.results[0];
+
+            userSection.innerHTML = `
+                <img src="${user.picture.large}">
+                <h3>${user.name.first} ${user.name.last}</h3>
+                <p>Email: ${user.email}</p>
+                <p>País: ${user.location.country}</p>
+            `;
+        } catch {
+            userSection.innerHTML = '<p>Error</p>';
+        }
+    });
+</script>
+</body>
